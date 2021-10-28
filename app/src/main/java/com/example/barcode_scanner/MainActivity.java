@@ -106,32 +106,64 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            if (barcodes.valueAt(0).email != null) {
+                            /*
+                            Toast.makeText(getApplicationContext(), ("Value: "+barcodes.valueAt(0).displayValue
+                                            +"\nType: "+getType(barcodes.valueAt (0) .valueFormat)),
+                                    Toast.LENGTH_SHORT).show();
+                             */
+                            //barcodeData = barcodes.valueAt(0).displayValue;
 
-                                System.out.println ("barcodes");
-                                System.out.println (barcodes.valueAt (0) .format); // 256
-                                System.out.println (barcodes.valueAt (0) .valueFormat);
-
-
-                                barcodeText.removeCallbacks(null);
-                                barcodeData = barcodes.valueAt(0).email.address+"\n"+
-                                                barcodes.valueAt(0).format;
-
-                                barcodeText.setText(barcodeData);
-                                toneGen1.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
-                            } else {
-                                System.out.println ("barcodes");
-                                System.out.println (barcodes.valueAt (0) .format); // 256
-                                System.out.println (barcodes.valueAt (0) .valueFormat);
-                                barcodeData = barcodes.valueAt(0).displayValue;
-                                barcodeText.setText(barcodeData);
-                                toneGen1.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
-
-                            }
+                            barcodeData=("Value: "+barcodes.valueAt(0).displayValue
+                                    +"\nType: "+getType(barcodes.valueAt (0) .valueFormat));
+                            barcodeText.setText(barcodeData);
+                            toneGen1.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
                         }
                     });
-
                 }
+            }
+
+            public String getType(int x){
+                switch(x){
+                    case 1:
+                        return "CODE 128";
+                    case 2:
+                        return "CODE 93";
+                    case 3:
+                        return "ISBN";
+                    case 4:
+                        return "Contact Info";
+                    case 5:
+                        return "Product";
+                    case 6:
+                        return "SMS";
+                    case 7:
+                        return "TEXT";
+                    case 8:
+                        return "URL";
+                    case 9:
+                        return "WIFI";
+                    case 10:
+                        return "GEO";
+                    case 12:
+                        return "Driver's License";
+                    case 16:
+                        return "Data Matrix";
+                    case 32:
+                        return "EAN 13";
+                    case 64:
+                        return "EAN 8";
+                    case 128:
+                        return "ITF";
+                    case 256:
+                        return "QR Code";
+                    case 512:
+                        return "UPC A (Grocery)";
+                    case 1024:
+                        return "UPC E (Grocery)";
+                    case 2048:
+                        return "PDF417";
+                }
+                return "INVALID";
             }
         });
     }
