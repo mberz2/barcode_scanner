@@ -1,186 +1,150 @@
 package com.example.barcode_scanner;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.SparseArray;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.zxing.BarcodeFormat;
+import static com.google.zxing.BarcodeFormat.*;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
-import java.io.IOException;
+import edu.pdx.cs410j.scanner.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SurfaceView surfaceView;
-    private BarcodeDetector barcodeDetector;
-    private CameraSource cameraSource;
-    private static final int REQUEST_CAMERA_PERMISSION = 201;
-    private ToneGenerator toneGen1;
-    private TextView barcodeText;
-    private String barcodeData;
-
+    //Initialize variable
+    Button btScan;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toneGen1 = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
-        surfaceView = findViewById(R.id.surface_view);
-        barcodeText = findViewById(R.id.barcode_text);
-        initialiseDetectorsAndSources();
-    }
 
-    private void initialiseDetectorsAndSources() {
+        //Assign variable
+        btScan = findViewById(R.id.bt_scan);
 
-        Toast.makeText(getApplicationContext(),
-                "Barcode scanner started", Toast.LENGTH_SHORT).show();
-
-        barcodeDetector = new BarcodeDetector.Builder(this)
-                .setBarcodeFormats(Barcode.ALL_FORMATS)
-                .build();
-
-        cameraSource = new CameraSource.Builder(this, barcodeDetector)
-                .setRequestedPreviewSize(1920, 1080)
-                .setAutoFocusEnabled(true) //you should add this feature
-                .build();
-
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        btScan.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                try {
-                    if (ActivityCompat.checkSelfPermission
-                            (MainActivity.this, Manifest.permission.CAMERA)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        cameraSource.start(surfaceView.getHolder());
-                    } else {
-                        ActivityCompat.requestPermissions(MainActivity.this, new
-                                String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-                    }
+            public void onClick(View view) {
+                //Initialize intent integrator
+                IntentIntegrator intentIntegrator = new IntentIntegrator(
+                        MainActivity.this
+                );
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+                //Set prompt text
+                intentIntegrator.setPrompt("For flash use volume up key.");
 
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            }
+                //Set beep
+                intentIntegrator.setBeepEnabled(true);
 
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                cameraSource.stop();
-            }
-        });
+                //Locked orientation
+                intentIntegrator.setOrientationLocked(true);
 
+                //Set capture activity
+                intentIntegrator.setCaptureActivity(Capture.class);
 
-        barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
-            @Override
-            public void release() {
-                Toast.makeText(getApplicationContext(),
-                        "To prevent memory leaks barcode scanner has been stopped",
-                        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void receiveDetections(@NonNull Detector.Detections<Barcode> detections) {
-                final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-                if (barcodes.size() != 0) {
-
-                    System.out.println("****** IN DETECTOR");
-
-                    barcodeText.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-
-                            /*
-                            Toast.makeText(getApplicationContext(), ("Value: "+barcodes.valueAt(0).displayValue
-                                            +"\nType: "+getType(barcodes.valueAt (0) .valueFormat)),
-                                    Toast.LENGTH_SHORT).show();
-                             */
-                            //barcodeData = barcodes.valueAt(0).displayValue;
-
-                            barcodeData=("Value: "+barcodes.valueAt(0).displayValue
-                                    +"\nType: "+getType(barcodes.valueAt (0) .valueFormat));
-                            barcodeText.setText(barcodeData);
-                            toneGen1.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
-                        }
-                    });
-                }
-            }
-
-            public String getType(int x){
-                switch(x){
-                    case 1:
-                        return "CODE 128";
-                    case 2:
-                        return "CODE 93";
-                    case 3:
-                        return "ISBN";
-                    case 4:
-                        return "Contact Info";
-                    case 5:
-                        return "Product";
-                    case 6:
-                        return "SMS";
-                    case 7:
-                        return "TEXT";
-                    case 8:
-                        return "URL";
-                    case 9:
-                        return "WIFI";
-                    case 10:
-                        return "GEO";
-                    case 12:
-                        return "Driver's License";
-                    case 16:
-                        return "Data Matrix";
-                    case 32:
-                        return "EAN 13";
-                    case 64:
-                        return "EAN 8";
-                    case 128:
-                        return "ITF";
-                    case 256:
-                        return "QR Code";
-                    case 512:
-                        return "UPC A (Grocery)";
-                    case 1024:
-                        return "UPC E (Grocery)";
-                    case 2048:
-                        return "PDF417";
-                }
-                return "INVALID";
+                //Initiate scan
+                intentIntegrator.initiateScan();
             }
         });
     }
 
-
     @Override
-    protected void onPause() {
-        super.onPause();
-        getSupportActionBar().hide();
-        cameraSource.release();
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //Initialize intent result
+        IntentResult intentResult = IntentIntegrator.parseActivityResult(
+                requestCode,resultCode,data
+        );
+
+        //Check condition
+        if(intentResult.getContents() != null){
+            //When result content is not null
+            //Initialize alert dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                    MainActivity.this
+            );
+
+            //Set Activity type
+            String activityType = "Observe";
+
+            //Set title
+            builder.setTitle("Scan Result");
+
+            //Set message
+            //builder.setMessage(intentResult.getContents());
+            builder.setMessage("#: "+intentResult.getContents()
+                    +"\nType: "+intentResult.getFormatName()
+                    +"Activity: "+activityType);
+
+
+            //Set positive button
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //Dismiss dialog
+                    dialogInterface.dismiss();
+                }
+            });
+
+            //Show alert dialog
+            builder.show();
+        } else {
+            //When result content is null
+            //Display toast
+            Toast.makeText(getApplicationContext(),
+                    "Failed to scan.",Toast.LENGTH_SHORT)
+                    .show();
+        }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        getSupportActionBar().hide();
-        initialiseDetectorsAndSources();
+    public static BarcodeFormat getBarCodeFormatWith(final String s) {
+
+        if (s.equals(EAN_8.toString())){
+            return EAN_8;
+        } else if (s.equals(EAN_13.toString())) {
+            return EAN_13;
+        } else if (s.equals(UPC_A.toString())) {
+            return UPC_A;
+        } else if (s.equals(QR_CODE.toString())) {
+            return QR_CODE;
+        } else if (s.equals(CODE_39.toString())) {
+            return CODE_39;
+        } else if (s.equals(CODE_128.toString())) {
+            return CODE_128;
+        } else if (s.equals(ITF.toString())) {
+            return ITF;
+        } else if (s.equals(PDF_417.toString())) {
+            return PDF_417;
+        } else if (s.equals(CODABAR.toString())) {
+            return CODABAR;
+        } else if (s.equals(DATA_MATRIX.toString())) {
+            return DATA_MATRIX;
+        } else if (s.equals(AZTEC.toString())) {
+            return AZTEC;
+        } else if (s.equals(PDF_417.toString())) {
+            return PDF_417;
+        }  else if (s.equals(CODE_93.toString())) {
+            return CODE_93;
+        }  else if (s.equals(MAXICODE.toString())) {
+            return MAXICODE;
+        }  else if (s.equals(UPC_E.toString())) {
+            return UPC_E;
+        }  else if (s.equals(UPC_EAN_EXTENSION.toString())) {
+            return UPC_EAN_EXTENSION;
+        }  else if (s.equals(RSS_14.toString())) {
+            return RSS_14;
+        }  else {
+            return null;
+        }
     }
 
 }
