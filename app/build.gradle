@@ -6,7 +6,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "edu.pdx.cs410j.scanner"
+        applicationId "com.example.barcode_scanner"
         minSdk 29
         targetSdk 31
         versionCode 1

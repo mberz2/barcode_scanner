@@ -16,8 +16,6 @@ import static com.google.zxing.BarcodeFormat.*;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import edu.pdx.cs410j.scanner.R;
-
 public class MainActivity extends AppCompatActivity {
 
     //Initialize variable
